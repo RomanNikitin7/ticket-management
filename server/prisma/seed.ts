@@ -1,8 +1,9 @@
 // Creates the first admin from ADMIN_EMAIL / ADMIN_PASSWORD (idempotent).
-// The admin is created through Better Auth's internal adapter (sign-up would
-// give the "agent" role, since clients can't set their own role).
+// Public sign-up is disabled, so accounts are created through Better Auth's
+// internal adapter, the same way its sign-up route does it.
 import { auth } from "../src/auth";
 import { prisma } from "../src/db";
+import { Role } from "../generated/client";
 
 const email = process.env.ADMIN_EMAIL;
 const password = process.env.ADMIN_PASSWORD;
@@ -24,7 +25,7 @@ if (existing) {
     email: email.toLowerCase(),
     name,
     emailVerified: true,
-    role: "admin",
+    role: Role.admin,
     active: true,
   }, { method: "email-password" });
   await ctx.internalAdapter.linkAccount({

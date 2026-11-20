@@ -7,6 +7,11 @@ generator client {
   output   = "../generated"
 }
 
+enum Role {
+  admin
+  agent
+}
+
 enum TicketStatus {
   open
   resolved
@@ -34,7 +39,7 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
-  role          String    @default("agent")
+  role          Role      @default(agent)
   active        Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
