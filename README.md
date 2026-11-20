@@ -22,16 +22,26 @@ Secrets are not in Git. Each developer creates their own `.env`.
    copy .env.example .env        # Windows (PowerShell/cmd)
    cp .env.example .env          # macOS/Linux/Git Bash
    ```
-   Then edit `server/.env`:
+   Then edit `server/.env` (see the comments in `.env.example`):
    ```
    PORT=3000
    DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/helpdesk?schema=public"
+   BETTER_AUTH_SECRET="<output of: openssl rand -base64 32>"
+   BETTER_AUTH_URL="http://localhost:3000"
+   CLIENT_URL="http://localhost:5173"
+   ADMIN_EMAIL="you@example.com"
+   ADMIN_NAME="Admin"
+   ADMIN_PASSWORD="a-strong-password"
    ```
    Special characters in the password must be URL-encoded (`@` is `%40`, `#` is `%23`).
 3. Create the database and tables (Prisma creates the `helpdesk` database if it does not exist):
    ```
    cd server
    bun run db:migrate
+   ```
+4. Create the first admin (safe to re-run):
+   ```
+   bun run db:seed
    ```
 
 ## Run
@@ -51,9 +61,19 @@ Check http://localhost:3000/api/health: it should return `{"status":"ok","db":"c
 | --- | --- |
 | `bun run db:migrate` | Apply schema changes in development (creates a migration) |
 | `bun run db:deploy` | Apply existing migrations (production) |
+| `bun run db:seed` | Create the first admin from `ADMIN_*` in `.env` |
 | `bun run db:studio` | Open Prisma Studio to browse tables |
 | `bun run typecheck` | Typecheck the server |
 
 ## Secrets
 
 Never commit `.env`. Only `.env.example` (with placeholders) is tracked.
+
+## Authentication (Better Auth)
+
+Email + password with sessions stored in Postgres (HttpOnly cookie, 7 days). Mounted at `/api/auth/*`. Anyone can sign up; new users get the `agent` role (the role can't be set from the client). The first admin comes from `bun run db:seed`.
+
+- `POST /api/auth/sign-up/email` with `{ name, email, password }`
+- `POST /api/auth/sign-in/email` with `{ email, password }`
+- `POST /api/auth/sign-out`
+- `GET /api/me` returns the current session, or 401

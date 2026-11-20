@@ -7,11 +7,6 @@ generator client {
   output   = "../generated"
 }
 
-enum Role {
-  admin
-  agent
-}
-
 enum TicketStatus {
   open
   resolved
@@ -29,16 +24,70 @@ enum MessageDirection {
   outbound
 }
 
+// --- Better Auth tables (user, session, account, verification) ---
+// Generated with `npx auth@latest generate`, then adapted: User also holds our
+// `role` (admin | agent) and `active` fields and is linked to tickets.
+
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  name         String
-  passwordHash String
-  role         Role     @default(agent)
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  tickets      Ticket[]
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String    @default("agent")
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  tickets       Ticket[]
 }
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// --- Helpdesk tables ---
 
 model Ticket {
   id         Int             @id @default(autoincrement())
@@ -49,7 +98,7 @@ model Ticket {
   category   TicketCategory?
   summary    String?
   assignee   User?           @relation(fields: [assigneeId], references: [id])
-  assigneeId Int?
+  assigneeId String?
   messages   Message[]
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
@@ -59,14 +108,14 @@ model Ticket {
 }
 
 model Message {
-  id         Int              @id @default(autoincrement())
-  ticket     Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  ticketId   Int
-  direction  MessageDirection
-  body       String
-  messageId  String?          @unique
-  inReplyTo  String?
-  createdAt  DateTime         @default(now())
+  id        Int              @id @default(autoincrement())
+  ticket    Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId  Int
+  direction MessageDirection
+  body      String
+  messageId String?          @unique
+  inReplyTo String?
+  createdAt DateTime         @default(now())
 
   @@index([ticketId])
 }
