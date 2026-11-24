@@ -39,3 +39,11 @@ body {
   outline: 3px solid var(--color-ink);
   outline-offset: 2px;
 }
+
+/* Forms that must never show an outline, in any state. */
+.no-outline,
+.no-outline *,
+.no-outline :focus,
+.no-outline :focus-visible {
+  outline: none;
+}
