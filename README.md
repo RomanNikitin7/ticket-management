@@ -39,7 +39,7 @@ Secrets are not in Git. Each developer creates their own `.env`.
    cd server
    bun run db:migrate
    ```
-4. Create the first admin (safe to re-run):
+4. Create the first admin (public sign-up is disabled; safe to re-run):
    ```
    bun run db:seed
    ```
@@ -71,9 +71,8 @@ Never commit `.env`. Only `.env.example` (with placeholders) is tracked.
 
 ## Authentication (Better Auth)
 
-Email + password with sessions stored in Postgres (HttpOnly cookie, 7 days). Mounted at `/api/auth/*`. Anyone can sign up; new users get the `agent` role (the role can't be set from the client). The first admin comes from `bun run db:seed`.
+Email + password with sessions stored in Postgres (HttpOnly cookie, 7 days). Mounted at `/api/auth/*`. Public sign-up is disabled (`/api/auth/sign-up/email` returns 400); the first admin comes from `bun run db:seed`.
 
-- `POST /api/auth/sign-up/email` with `{ name, email, password }`
 - `POST /api/auth/sign-in/email` with `{ email, password }`
 - `POST /api/auth/sign-out`
 - `GET /api/me` returns the current session, or 401

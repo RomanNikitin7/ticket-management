@@ -11,9 +11,10 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // extend at most once a day while active
   },
 
-  // Anyone can sign up; new users are always "agent" (role is input: false below).
+  // Public sign-up is off: accounts are created by the seed script (admin).
   emailAndPassword: {
     enabled: true,
+    disableSignUp: true,
   },
 
   user: {

@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #17241e;
+  --color-desk: #dde5dc;
+  --color-paper: #f7f8f4;
+  --color-highlight: #f5b82e;
+  --color-alert: #a8321f;
+}
+
+body {
+  background: var(--color-desk);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* A ticket: notches cut into both sides where the perforation runs. */
+.ticket {
+  --cut: 7.5rem;
+  background: var(--color-paper);
+  border-radius: 0.5rem;
+  -webkit-mask:
+    radial-gradient(circle 0.9rem at 0 var(--cut), #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 0.9rem at 100% var(--cut), #0000 97%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 0.9rem at 0 var(--cut), #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 0.9rem at 100% var(--cut), #0000 97%, #000) right / 51% 100% no-repeat;
+}
+
+.ticket-perforation {
+  position: absolute;
+  inset-inline: 1.25rem;
+  top: var(--cut);
+  border-top: 2px dashed color-mix(in srgb, var(--color-ink) 30%, transparent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
