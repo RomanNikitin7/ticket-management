@@ -14,7 +14,7 @@ export default function Layout() {
     <>
       <header className="bg-ink text-paper">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-4 px-6">
-          <Link to="/" className="text-lg font-extrabold tracking-tight">
+          <Link to="/" className="text-lg font-extrabold tracking-tight focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-highlight">
             Ticket Management
           </Link>
           {session && (
@@ -31,7 +31,7 @@ export default function Layout() {
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="rounded-md border-2 border-paper/40 px-3 py-1 text-sm font-semibold transition-colors hover:border-highlight hover:text-highlight focus-visible:outline-highlight"
+                className="rounded-md border-2 border-paper/40 px-3 py-1 text-sm font-semibold transition-colors hover:border-highlight hover:text-highlight focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-highlight"
               >
                 Sign out
               </button>

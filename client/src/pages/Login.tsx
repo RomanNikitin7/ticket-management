@@ -48,7 +48,7 @@ export default function Login() {
 
   return (
     <div className="mx-auto mt-6 w-full max-w-md sm:mt-14">
-      <div className="ticket relative">
+      <div className="relative rounded-lg bg-paper [--cut:7.5rem] [mask:radial-gradient(circle_0.9rem_at_0_var(--cut),#0000_97%,#000)_left/51%_100%_no-repeat,radial-gradient(circle_0.9rem_at_100%_var(--cut),#0000_97%,#000)_right/51%_100%_no-repeat]">
         <header className="flex h-[7.5rem] flex-col justify-center px-8">
           <h1 className="text-4xl font-extrabold leading-none tracking-tight">
             Support desk
@@ -57,11 +57,14 @@ export default function Login() {
             Sign in to pick up your tickets.
           </p>
         </header>
-        <div className="ticket-perforation" aria-hidden="true" />
+        <div
+          className="absolute inset-x-5 top-(--cut) border-t-2 border-dashed border-ink/30"
+          aria-hidden="true"
+        />
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          className="no-outline space-y-5 px-8 pt-7 pb-8"
+          className="space-y-5 px-8 pt-7 pb-8"
         >
           <div>
             <label htmlFor="email" className="block text-sm font-semibold">
@@ -107,7 +110,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-md bg-highlight px-4 py-3 text-base font-extrabold text-ink transition-[filter,transform] hover:brightness-95 active:translate-y-px disabled:opacity-60"
+            className="w-full rounded-md bg-highlight px-4 py-3 text-base font-extrabold text-ink transition-[filter,transform] hover:brightness-95 active:translate-y-px focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:opacity-60"
           >
             {isSubmitting ? "Signing in" : "Sign in"}
           </button>
