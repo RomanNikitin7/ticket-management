@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,20 @@ export default function Layout() {
             />
             Ticket Management
           </Link>
+          {session?.user.role === "admin" && (
+            <nav aria-label="Main">
+              <NavLink
+                to="/users"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-1.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight ${
+                    isActive ? "bg-paper/10 text-paper" : "text-paper/80 hover:text-paper"
+                  }`
+                }
+              >
+                Users
+              </NavLink>
+            </nav>
+          )}
           {session && (
             <div className="ml-auto flex items-center gap-3">
               <Avatar className="size-8 bg-highlight">

@@ -43,6 +43,12 @@ Better Auth (email + password) with Prisma/PostgreSQL. Config in `server/src/aut
 - `GET /api/me` returns the current session or 401; use `auth.api.getSession({ headers: fromNodeHeaders(req.headers) })` to protect new API routes.
 - Client: `client/src/lib/auth-client.ts` (`authClient`, same origin via the Vite proxy). `ProtectedRoute` redirects unauthenticated users to `/login`; the login page (`client/src/pages/Login.tsx`) uses react-hook-form + Zod and redirects signed-in users to `/`. `Layout` hides the header on `/login`.
 - Admin-only features (user management) must check `role === "admin"` on the server; hiding UI is not enough.
+- `/users` (`client/src/pages/Users.tsx`) is admin-only. `AdminRoute` (`client/src/components/AdminRoute.tsx`, nested inside `ProtectedRoute` in `App.tsx`) redirects non-admins to `/`, and `Layout` shows the "Users" nav link only to admins. This is client-side only; any future user-management API must enforce the role on the server.
+- `authClient` uses `inferAdditionalFields` (`client/src/lib/auth-client.ts`) so `session.user.role` is typed. When adding extra user fields on the server, mirror them there.
+
+## Keeping docs current
+
+After a change that affects architecture, auth, routes, commands, env vars or conventions, update the relevant section of this file in the same change. Do not log routine edits or things visible in the code.
 
 ## Documentation: use Context7
 
