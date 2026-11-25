@@ -6,7 +6,7 @@ AI-powered support ticket system: receives support emails, creates tickets, clas
 
 Two independent projects, no workspaces, each with its own `package.json` and `bun.lock`:
 
-- `client/`: React + TypeScript + React Router + Tailwind CSS, built with Vite (dev server on :5173, proxies `/api` to :3000)
+- `client/`: React + TypeScript + React Router + Tailwind CSS + shadcn/ui, built with Vite (dev server on :5173, proxies `/api` to :3000)
 - `server/`: Express + TypeScript, run directly by Bun (`src/index.ts`, port from `PORT`, default 3000)
 
 ## Commands
@@ -25,8 +25,24 @@ cd client && bun run dev      # web on http://localhost:5173
 ## Conventions
 
 - Use Bun, not npm/yarn/pnpm, for installs and scripts.
+- UI: shadcn/ui (style `base-nova`, built on Base UI) in `client/src/components/ui/`. Prefer these components over hand-rolled markup. Add more with `cd client && bunx --bun shadcn@latest add <name>`. The `@/` alias maps to `client/src/`.
+- After `shadcn add`, check that `client/src/lib/utils.ts` still defines `cn` with `clsx` + `tailwind-merge` (the CLI may regenerate it as `export { cn } from "cn"` and install an unrelated `cn` package; remove it) and that new files import `cn` from `@/lib/utils`.
+- Theme: shadcn CSS variables plus project colors (`ink`, `desk`, `paper`, `highlight`, `alert`) live in `client/src/index.css`.
+- TypeScript 7: do not set `baseUrl` in `tsconfig.json`; the `@/*` alias uses `paths` only.
 - TypeScript strict mode. API routes live under `/api`.
 - Ticket statuses: `open`, `resolved`, `closed`. Categories: general question, technical question, refund request. Roles: `admin`, `agent`.
+
+## Authentication
+
+Better Auth (email + password) with Prisma/PostgreSQL. Config in `server/src/auth.ts`; handler mounted at `/api/auth/*splat` in `server/src/index.ts`.
+
+- Sessions are stored in the database (no cookie cache or secondary storage); they last 7 days and are extended at most once a day.
+- Public sign-up is disabled (`disableSignUp: true`). Accounts are created only by the seed script (first admin) or, later, by an admin through user management.
+- `user.role` (`admin` | `agent`, default `agent`) and `user.active` (default `true`) are extra fields with `input: false`, so clients can never set them. `active` is not enforced anywhere yet.
+- First admin: set `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD` in `server/.env`, then `cd server && bun run db:seed` (idempotent). Other env vars (see `server/.env.example`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CLIENT_URL` (trusted origin, default `http://localhost:5173`).
+- `GET /api/me` returns the current session or 401; use `auth.api.getSession({ headers: fromNodeHeaders(req.headers) })` to protect new API routes.
+- Client: `client/src/lib/auth-client.ts` (`authClient`, same origin via the Vite proxy). `ProtectedRoute` redirects unauthenticated users to `/login`; the login page (`client/src/pages/Login.tsx`) uses react-hook-form + Zod and redirects signed-in users to `/`. `Layout` hides the header on `/login`.
+- Admin-only features (user management) must check `role === "admin"` on the server; hiding UI is not enough.
 
 ## Documentation: use Context7
 

@@ -12,8 +12,8 @@ export default function Home() {
 
   return (
     <section>
-      <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
-      <p className="mt-2 text-ink/70">API status: {status}</p>
+      <h1 className="text-4xl font-extrabold tracking-tight">Dashboard</h1>
+      <p className="mt-2 text-lg text-ink/70">API status: {status}</p>
     </section>
   );
 }

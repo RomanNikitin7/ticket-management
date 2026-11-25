@@ -3,7 +3,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Navigate, useNavigate } from "react-router";
-import { authClient } from "../lib/auth-client";
+import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const loginSchema = z.object({
   email: z
@@ -15,10 +18,9 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-const fieldClass =
-  "mt-1.5 w-full rounded-md border-2 border-ink/25 bg-white px-3 py-2.5 text-base " +
-  "transition-colors outline-none focus:border-ink focus:outline-none focus-visible:outline-none " +
-  "aria-invalid:border-alert focus:aria-invalid:border-alert";
+const inputClass =
+  "h-11 rounded-md border-ink/25 bg-white px-3 text-base focus-visible:border-ink focus-visible:ring-ink/20 aria-invalid:border-alert aria-invalid:ring-alert/20";
+
 
 export default function Login() {
   const { data: session, isPending } = authClient.useSession();
@@ -47,75 +49,71 @@ export default function Login() {
   }
 
   return (
-    <div className="mx-auto mt-6 w-full max-w-md sm:mt-14">
-      <div className="relative rounded-lg bg-paper [--cut:7.5rem] [mask:radial-gradient(circle_0.9rem_at_0_var(--cut),#0000_97%,#000)_left/51%_100%_no-repeat,radial-gradient(circle_0.9rem_at_100%_var(--cut),#0000_97%,#000)_right/51%_100%_no-repeat]">
-        <header className="flex h-[7.5rem] flex-col justify-center px-8">
-          <h1 className="text-4xl font-extrabold leading-none tracking-tight">
-            Support desk
-          </h1>
-          <p className="mt-2 text-base text-ink/70">
-            Sign in to pick up your tickets.
+    <main className="flex min-h-svh items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md overflow-hidden rounded-xl bg-paper shadow-[0_24px_60px_-24px_rgba(23,36,30,0.45)] ring-1 ring-ink/10">
+          <div className="h-1.5 bg-highlight" aria-hidden="true" />
+          <div className="px-8 pt-8 pb-9 sm:px-10">
+          <p className="mb-10 text-lg font-extrabold tracking-tight">
+            Ticket Management
           </p>
-        </header>
-        <div
-          className="absolute inset-x-5 top-(--cut) border-t-2 border-dashed border-ink/30"
-          aria-hidden="true"
-        />
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="space-y-5 px-8 pt-7 pb-8"
-        >
-          <div>
-            <label htmlFor="email" className="block text-sm font-semibold">
-              Work email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              aria-invalid={!!errors.email}
-              {...register("email")}
-              className={fieldClass}
-            />
-            {errors.email && (
-              <p role="alert" className="mt-1.5 text-sm font-semibold text-alert">
-                {errors.email.message}
+          <h1 className="text-3xl font-extrabold tracking-tight">Sign in</h1>
+          <p className="mt-2 text-ink/70">Use your work email to open the queue.</p>
+
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-semibold">
+                Work email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                aria-invalid={!!errors.email}
+                {...register("email")}
+                className={inputClass}
+              />
+              {errors.email && (
+                <p role="alert" className="text-sm font-medium text-alert">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-semibold">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                aria-invalid={!!errors.password}
+                {...register("password")}
+                className={inputClass}
+              />
+              {errors.password && (
+                <p role="alert" className="text-sm font-medium text-alert">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+            {error && (
+              <p
+                role="alert"
+                className="rounded-md border border-alert/30 bg-alert/5 px-3 py-2.5 text-sm font-medium text-alert"
+              >
+                {error}
               </p>
             )}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="h-11 w-full bg-ink text-base font-semibold text-paper hover:bg-ink/90"
+            >
+              {isSubmitting ? "Signing in" : "Sign in"}
+            </Button>
+          </form>
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-semibold">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              aria-invalid={!!errors.password}
-              {...register("password")}
-              className={fieldClass}
-            />
-            {errors.password && (
-              <p role="alert" className="mt-1.5 text-sm font-semibold text-alert">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-          {error && (
-            <p role="alert" className="text-sm font-semibold text-alert">
-              {error}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-md bg-highlight px-4 py-3 text-base font-extrabold text-ink transition-[filter,transform] hover:brightness-95 active:translate-y-px focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:opacity-60"
-          >
-            {isSubmitting ? "Signing in" : "Sign in"}
-          </button>
-        </form>
-      </div>
-    </div>
+        </div>
+      </main>
   );
 }
