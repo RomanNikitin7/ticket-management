@@ -26,18 +26,16 @@ cd client && bun run dev      # web on http://localhost:5173
 
 ## E2E tests (Playwright)
 
-`e2e/` is a third independent Bun project. Config: `e2e/playwright.config.ts`; tests go in `e2e/tests/`. Chromium only. Needs a current Node (24).
+Tests live in `e2e/`. Setup, commands and testing rules are in `.claude/agents/e2e-test-writer.md`. Read that file before running tests or changing the e2e setup, including `server/.env.test` and `server/prisma/reset-test-db.ts`.
 
-```
-cd e2e && bun install && bunx playwright install chromium   # first time
-cd e2e && bun run test        # also: test:ui, test:headed, report, typecheck
-bun run test:e2e              # same as `test`, from the repo root
-```
+### Writing tests
 
-- Playwright starts its own API (:3001) and web (:5174, proxying to it through `API_URL`), so `bun run dev` can keep running. It never reuses running servers.
-- Separate database `helpdesk_test`, configured in `server/.env.test` (copy `server/.env.test.example`). Each run applies migrations, then `server/prisma/reset-test-db.ts` empties all tables and creates one admin and one agent (`E2E_*` variables, readable from `process.env` in tests). Both the config and the reset script refuse database names not ending in `_test`. The reset happens once per run, not per test, and tests run with 1 worker.
-- The test API runs with `--no-env-file`, but any env var the server needs must come from `.env.test` or the config; Prisma CLI still loads `server/.env` without overriding those.
-- Do not set `NODE_ENV=test` or `TEST` for the servers: Better Auth would skip its origin check. Rate limiting is off in tests because they do not run in production mode.
+Always use the `e2e-test-writer` subagent (Agent tool, `subagent_type: "e2e-test-writer"`) to write, update or fix e2e tests; do not write them in the main session. This is a standing request to spawn it.
+
+- **When:** a request for e2e tests, a new or changed user-facing flow (login, routing, roles, tickets), or a failing e2e test. For a new feature, run it after the feature works.
+- **Prompt:** it does not see the conversation, so include the feature or flow, the changed files, the expected behavior (including who may access it and what should fail), and the error output when fixing a test.
+- **One at a time:** do not run several in parallel; they share the test database and ports.
+- **Afterwards:** it does not change application code. Check its changes, then tell the user what it added, the test results and any app bugs it found. Fix app bugs outside the subagent, then run it again to verify.
 
 ## Conventions
 
