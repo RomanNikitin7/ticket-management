@@ -37,10 +37,12 @@ cd client && bun run dev      # web on http://localhost:5173
 Better Auth (email + password) with Prisma/PostgreSQL. Config in `server/src/auth.ts`; handler mounted at `/api/auth/*splat` in `server/src/index.ts`.
 
 - Sessions are stored in the database (no cookie cache or secondary storage); they last 7 days and are extended at most once a day.
+- Rate limiting is enabled in every environment (3 requests per 10s on sign-in). The client IP comes from `x-client-ip`, which `index.ts` sets from the socket address. This assumes direct connections (or the local Vite proxy); behind a reverse proxy, reconfigure it or all users share one limit.
+- The API listens on `127.0.0.1` unless `HOST` is set. The error handler at the end of `index.ts` must stay after all routes so errors never expose internals.
 - Public sign-up is disabled (`disableSignUp: true`). Accounts are created only by the seed script (first admin) or, later, by an admin through user management.
-- `user.role` (`admin` | `agent`, default `agent`) and `user.active` (default `true`) are extra fields with `input: false`, so clients can never set them. `active` is not enforced anywhere yet.
+- `user.role` (`admin` | `agent`, default `agent`) and `user.active` (default `true`) are extra fields with `input: false`, so clients can never set them. `active` is checked only by `requireAuth`: sign-in, `/api/auth/*` and `/api/me` do not enforce it yet.
 - First admin: set `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD` in `server/.env`, then `cd server && bun run db:seed` (idempotent). Other env vars (see `server/.env.example`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CLIENT_URL` (trusted origin, default `http://localhost:5173`).
-- `GET /api/me` returns the current session or 401; use `auth.api.getSession({ headers: fromNodeHeaders(req.headers) })` to protect new API routes.
+- `GET /api/me` returns the current session or 401. Protect new API routes with the middleware in `server/src/middleware/`: `requireAuth` (401 without a session, 403 if `user.active` is false, sets `req.user`), then `requireAdmin` (403 unless admin) for admin routes: `app.get(path, requireAuth, requireAdmin, handler)`.
 - Client: `client/src/lib/auth-client.ts` (`authClient`, same origin via the Vite proxy). `ProtectedRoute` redirects unauthenticated users to `/login`; the login page (`client/src/pages/Login.tsx`) uses react-hook-form + Zod and redirects signed-in users to `/`. `Layout` hides the header on `/login`.
 - Admin-only features (user management) must check `role === "admin"` on the server; hiding UI is not enough.
 - `/users` (`client/src/pages/Users.tsx`) is admin-only. `AdminRoute` (`client/src/components/AdminRoute.tsx`, nested inside `ProtectedRoute` in `App.tsx`) redirects non-admins to `/`, and `Layout` shows the "Users" nav link only to admins. This is client-side only; any future user-management API must enforce the role on the server.

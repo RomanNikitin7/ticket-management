@@ -17,6 +17,16 @@ export const auth = betterAuth({
     disableSignUp: true,
   },
 
+  // On in every environment (the default is production only). Better Auth's
+  // built-in rule allows 3 requests per 10s on sign-in and change-password.
+  rateLimit: { enabled: true },
+
+  advanced: {
+    // Set by index.ts from the socket address. Never trust X-Forwarded-For here:
+    // clients can fake it. Behind a reverse proxy this must be reconfigured.
+    ipAddress: { ipAddressHeaders: ["x-client-ip"] },
+  },
+
   user: {
     additionalFields: {
       role: {

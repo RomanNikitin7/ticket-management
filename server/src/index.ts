@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth } from "./auth";
@@ -6,6 +6,8 @@ import { prisma } from "./db";
 
 const app = express();
 const port = process.env.PORT || 3000;
+// Local only by default; set HOST to accept connections from other machines.
+const host = process.env.HOST || "127.0.0.1";
 
 app.use(
   cors({
@@ -15,7 +17,13 @@ app.use(
 );
 
 // Better Auth must be mounted BEFORE express.json() (Express 5 wildcard syntax).
-app.all("/api/auth/*splat", toNodeHandler(auth));
+const authHandler = toNodeHandler(auth);
+
+app.all("/api/auth/*splat", (req, res) => {
+  // Overwrites any value sent by the client; used for rate limiting.
+  req.headers["x-client-ip"] = req.socket.remoteAddress ?? "";
+  return authHandler(req, res);
+});
 
 app.use(express.json());
 
@@ -41,6 +49,20 @@ app.get("/api/me", async (req, res) => {
   res.json(session);
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+// Must stay last. Logs the details and returns no internals to the client.
+const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
+  console.error(err);
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+  const status = err.status >= 400 && err.status < 500 ? err.status : 500;
+  res
+    .status(status)
+    .json({ error: status === 500 ? "Internal server error" : "Invalid request" });
+};
+app.use(errorHandler);
+
+app.listen(Number(port), host, () => {
+  console.log(`Server running on http://${host}:${port}`);
 });
