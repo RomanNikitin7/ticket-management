@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "test:e2e": "cd e2e && bun run test"
+  },
   "dependencies": {
     "better-auth": "^1.7.27"
   }

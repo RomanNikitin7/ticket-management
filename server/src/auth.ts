@@ -17,9 +17,9 @@ export const auth = betterAuth({
     disableSignUp: true,
   },
 
-  // On in every environment (the default is production only). Better Auth's
-  // built-in rule allows 3 requests per 10s on sign-in and change-password.
-  rateLimit: { enabled: true },
+  // Production only (`bun run start` sets NODE_ENV). Better Auth's built-in
+  // rule allows 3 requests per 10s on sign-in and change-password.
+  rateLimit: { enabled: process.env.NODE_ENV === "production" },
 
   advanced: {
     // Set by index.ts from the socket address. Never trust X-Forwarded-For here:
